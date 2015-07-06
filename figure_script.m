@@ -2,87 +2,59 @@ addpath(genpath('.'))
 
 iter = 500; % maximum number of solves
 tolerance = 1e-4; % residual tolerance
+plot_stack = 0;
+plot_convergence = 1;
+plot_wavelet = 0;
+precond = 0;
 
 
-% % LSQRcd
+% % LSQR
+smoothing = 0;
+Wdomain = 0;
+l1=0;
+prefix = 'script_figs/LSQR';
+
+
 mkdir('LSQR')
  int_grad_inv_proj_test_for_ubc('dummypath','800','8','1','36','0', ...
-     '0','1',0,1,0,0,0,0,iter, tolerance, 0, 'script_figs/LSQR',0);
+     '0','1',plot_stack,plot_convergence,plot_wavelet, l1, Wdomain,...
+                                iter, tolerance, smoothing, prefix,0);
 movefile('digi_results/*', 'LSQR')
 % 
 % 
+
+
 % % LSQR tikonov
+smoothing = 1;
+prefix = 'script_figs/LSQR_tik';
+
  mkdir('LSQR_tik')
  int_grad_inv_proj_test_for_ubc('dummypath','800','8','1','36','0', ...
-     '0','1',1,1,0,0,0,0,iter, tolerance, 1, 'script_figs/LSQR_tik',0);
+     '0','1',plot_stack,plot_convergence,plot_wavelet, l1, Wdomain,...
+                                iter, tolerance, smoothing, prefix,0);
  movefile('digi_results/*', 'LSQR_tik')
 
 % SPGL1
  mkdir('SPGL1')
+ smoothing = 0;
+ l1 = 1;
+ prefix = 'script_figs/SPGL1';
+ 
  int_grad_inv_proj_test_for_ubc('dummypath','800','8','1','36','0', ...
-     '0','1',0,1,0,1,0,0,iter, tolerance, 0, 'script_figs/SPGL1',0);
+     '0','1',plot_stack,plot_convergence,plot_wavelet, l1, Wdomain,...
+                                iter, tolerance, smoothing, prefix,0);
 movefile('digi_results/*', 'SPGL1')
 
 
 % SPGL1 WL
+prefix =  'script_figs/SPGL1_WL';
+Wdomain = 1;
+
 mkdir('SPGL1_WL')
-int_grad_inv_proj_test_for_ubc('dummypath','800','8','1','36','0', ...
-    '0','1',0,1,0,1,0,1,iter, tolerance, 0, 'script_figs/SPGL1_WL',0);
+ int_grad_inv_proj_test_for_ubc('dummypath','800','8','1','36','0', ...
+     '0','1',plot_stack,plot_convergence,plot_wavelet, l1, Wdomain,...
+                                iter, tolerance, smoothing, prefix,0);
 movefile('digi_results/*', 'SPGL1_WL')
 
 
-
-% $$$ iter = 75; % maximum number of solves
-% $$$ tolerance = 1e-4; % residual tolerance
-% $$$ 
-% $$$ 
-% $$$ % SPGL1
-% $$$ mkdir('SPGL1_early')
-% $$$ int_grad_inv_proj_test_for_ubc('dummypath','800','8','1','36','0', ...
-% $$$     '0','1',0,1,0,1,0,0,iter, tolerance, 0, 'script_figs/SPGL1_start_stop_early',0);
-% $$$ movefile('digi_results/*', 'SPGL1_early')
-% $$$ 
-% $$$ 
-% $$$ % SPGL1 WL
-% $$$ mkdir('SPGL1_WL_early')
-% $$$ int_grad_inv_proj_test_for_ubc('dummypath','800','8','1','36','0', ...
-% $$$     '0','1',0,1,0,1,0,1,iter, tolerance, 0, 'script_figs/SPGL1_WL_early',0);
-% $$$ movefile('digi_results/*', 'SPGL1_WL_early')
-
-
-
-
-% $$$ iter = 500; % maximum number of solves
-% $$$ tolerance = 1e-4; % residual tolerance
-
-% $$$ 
-% $$$ % SPGL1
-% $$$ mkdir('SPGL1_pc')
-% $$$ int_grad_inv_proj_test_for_ubc('dummypath','800','8','1','36','0', ...
-% $$$     '0','1',0,1,0,1,0,0,iter, tolerance, 0, 'script_figs/SPGL1_pc',1);
-% $$$ movefile('digi_results/*', 'SPGL1_pc')
-% $$$ 
-% $$$ 
-% $$$ % SPGL1 WL
-% $$$ mkdir('SPGL1_WL_pc')
-% $$$ int_grad_inv_proj_test_for_ubc('dummypath','800','8','1','36','0', ...
-% $$$     '0','1',0,1,0,1,0,1,iter, tolerance, 0, 'script_figs/SPGL1_WL_pc',1);
-% $$$ movefile('digi_results/*', 'SPGL1_WL_pc')
-% $$$ 
-% $$$ iter = 75; % maximum number of solves
-% $$$ tolerance = 1e-4; % residual tolerance
-% $$$ 
-% $$$ 
-% $$$ % SPGL1
-% $$$ mkdir('SPGL1_pc_early')
-% $$$ int_grad_inv_proj_test_for_ubc('dummypath','800','8','1','36','0', ...
-% $$$     '0','1',0,1,0,1,0,0,iter, tolerance, 0, 'script_figs/SPGL1_pc_early',1);
-% $$$ movefile('digi_results/*', 'SPGL1_pc_early')
-% $$$ 
-% $$$ 
-% $$$ % SPGL1 WL
-% $$$ mkdir('SPGL1_WL_pc_early')
-% $$$ int_grad_inv_proj_test_for_ubc('dummypath','800','8','1','36','0', ...
-% $$$     '0','1',0,1,0,1,0,1,iter, tolerance, 0, 'script_figs/SPGL1_WL_pc_early',1);
-% $$$ movefile('digi_results/*', 'SPGL1_WL_pc_early')
 

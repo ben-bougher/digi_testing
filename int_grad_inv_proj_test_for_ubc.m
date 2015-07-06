@@ -1,29 +1,8 @@
 function [] = int_grad_inv_proj_test_for_ubc(job_meta_path,i_block,...
     startvol,volinc,endvol,tottracerun,maxzout,wavevar, plot_stack, ...
-    plot_convergence, plot_wavelet, l1, bregman, Wdomain, max_iterations, ...
+    plot_convergence, plot_wavelet, l1, Wdomain, max_iterations, ...
     tolerance, smoothing, prefix, pc)
-%
-%% ------------------ Disclaimer  ------------------
-% 
-% BG Group plc or any of its respective subsidiaries, affiliates and 
-% associated companies (or by any of their respective officers, employees 
-% or agents) makes no representation or warranty, express or implied, in 
-% respect to the quality, accuracy or usefulness of this repository. The code
-% is this repository is supplied with the explicit understanding and 
-% agreement of recipient that any action taken or expenditure made by 
-% recipient based on its examination, evaluation, interpretation or use is 
-% at its own risk and responsibility.
-% 
-% No representation or warranty, express or implied, is or will be made in 
-% relation to the accuracy or completeness of the information in this 
-% repository and no responsibility or liability is or will be accepted by 
-% BG Group plc or any of its respective subsidiaries, affiliates and 
-% associated companies (or by any of their respective officers, employees 
-% or agents) in relation to it.
-%% ------------------ License  ------------------ 
-% GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007
-%% github
-% https://github.com/AnalysePrestackSeismic/
+
 %% ------------------ FUNCTION DEFINITION ---------------------------------
 % INT_GRAD_INV_PROJ: function to run Intercept Gradient Inversion using
 % dynamic wavelet set.
@@ -39,7 +18,23 @@ function [] = int_grad_inv_proj_test_for_ubc(job_meta_path,i_block,...
 %       converted to the maximum number of samples in the volume
 %       wavevar = Flag 1: for spatially varying wavelet, Flag 0: for
 %       spatially stationary wavelet
-
+%
+%   Additional behaviour and plotting flags
+%       plot_stack: Flag to plot the stacked section
+%       plot_convergence: Flag to plot the convergence curve of the
+%                         solver
+%       plot_wavelet: Flag to plot the wavelet
+%       l1: Flag to use SPGL1 as a solver
+%       Wdomain: Flag to regularize in the Discrete Wavelet domain.
+%       max_iterations: Maximimum number of iterations to use in
+%                       the inversion.
+%       tolerance: Tolerance to use for least squares solution.
+%       smoothing: Flag specifying that smoothing via Tikonov
+%                  regularization.
+%       prefix: File prefix for plotting output.
+%       pc: Flag to use a preconditioner matrix in the inversion.
+%
+%
 %   Outputs:
 %       digi_intercept SEGY files.
 %       digi_gradient SEGY files.
@@ -47,6 +42,10 @@ function [] = int_grad_inv_proj_test_for_ubc(job_meta_path,i_block,...
 %
 % Authors: James Selvage, Jonathan Edgar and a bit of Charles Jones and Simon Wrigley
 % -------------------------------------------------------------------------
+
+
+
+
 %% Parameters
 % would normaly convert all parameters to double, but keep i_block as string as being passed to
 % other modules; it does happen at the bottom of this program for output
@@ -418,7 +417,7 @@ if ilxl_read{vol_index_wb}(kk,1) == requiredinline;
     else     
         %[ava(:,kk),~] = lsqr(IGiter,data,tol,iter,[],[],cjmodel);
         %[ava_tmp,lsqflag,relres,fiternotmp,residvec] = lsqr(IGiter,data,tol,iter,[],[]);
-        if l1 == 1 | bregman==1
+        if l1 == 1 
             
             opts = spgSetParms('optTol',tolerance, 'iterations', max_iterations);
             %opts = spgSetParms('verbosity',0);
@@ -501,17 +500,14 @@ if ilxl_read{vol_index_wb}(kk,1) == requiredinline;
            
             
             
-            if bregman==1
-                [ava_tmp, r, info] = lb(A,data,[],1600,[],opts)
-            else
+        
                 if pc
                 [ava_tmp,r,g,info] = spgl1(op_precond*A, op_precond*data, 0, 1e-3, [], opts );
                 else
                 [ava_tmp,r,g,info] = spgl1(A, data, 0, 1e-3, [], opts );
                 end
-            end
-            
-            if plot_convergence==1 & kk==2 & bregman==0
+         
+            if plot_convergence==1 & kk==2
                 iterations = [1:info.iter];
                 figure
                 subplot(211)
@@ -682,7 +678,7 @@ saveas(gcf,strcat(prefix,'gradient_section.eps'),'epsc')
 %% wiggliorams
 wigglePlot(ava(2:end/2,:), [prefix, 'intercept_wiggler']);
 wigglePlot(ava(end/2+1:end,:), [prefix, 'gradient_wiggler']);
-
+% just the interesting part
 wigglePlot(ava(300:500,:), [prefix, 'intercept_wiggler_sub']);
 wigglePlot(ava(end/2+300:end/2 + 500,:), [prefix, 'gradient_wiggler_sub']);
 
@@ -692,14 +688,6 @@ wigglePlot(ava(end/2+300:end/2 + 500,:), [prefix, 'gradient_wiggler_sub']);
 clear IGiter IGmatrix;      % remove the preconditioning matrices
 
 %%
-% Save results
-%digi_intercept = zeros(job_meta.n_samples{vol_index_wb},ntraces);
-%digi_gradient = zeros(job_meta.n_samples{vol_index_wb},ntraces);
-
-%digi_intercept = [ava(1:ns,:);zeros(job_meta.n_samples{vol_index_wb}-ns,ntraces)];
-%digi_gradient = [ava(1+ns:end,:);zeros(job_meta.n_samples{vol_index_wb}-ns,ntraces)];
-%digi_minimum_energy_eer_projection = [bsxfun(@times,ava(1:ns,:),cosd(chi))+bsxfun(@times,ava(1+ns:end,:),sind(chi));zeros(job_meta.n_samples{vol_index_wb}-ns,ntraces)];
-%digi_minimum_energy_eer_projection = bsxfun(@times,ava(1:ns,:),cosd(chi))+bsxfun(@times,ava(1+ns:end,:),sind(chi));
 
 
 if needconf == 1;
@@ -715,24 +703,7 @@ if output_std == 1;
     std_minimum_energy_eer_projection = [bsxfun(@times,Imodel,cosd(chi))+bsxfun(@times,Gmodel,sind(chi));zeros(job_meta.n_samples{vol_index_wb}-ns,ntraces)];
 end
 
-% Old way to Unflatten data
-%digi_intercept(win_ind(:,1:ntraces)) = ava(1:ns,:);
-%digi_gradient(win_ind(:,1:ntraces)) = ava(1+ns:end,:);
-%digi_minimum_energy_eer_projection = bsxfun(@times,digi_intercept,cosd(chi))+bsxfun(@times,digi_gradient,sind(chi));
-%digi_confidence(win_ind(:,1:ntraces)) = digi_confidence(1:ns,:);
-% for kk = 1:ntraces
-% %cj edit    
-% %for kk = 1:length(wb_idx)
-%     digi_intercept(:,kk) = circshift(digi_intercept(:,kk),wb_idx(kk));
-%     digi_gradient(:,kk) = circshift(digi_gradient(:,kk),wb_idx(kk));
-%     digi_minimum_energy_eer_projection(:,kk) = circshift(digi_minimum_energy_eer_projection(:,kk),wb_idx(kk));
-%     digi_confidence(:,kk) = circshift(digi_confidence(:,kk),wb_idx(kk));
-%     if output_std == 1;
-%         std_intercept(:,kk) = circshift(std_intercept(:,kk),wb_idx(kk));
-%         std_gradient(:,kk) = circshift(std_gradient(:,kk),wb_idx(kk));
-%         std_minimum_energy_eer_projection(:,kk) = circshift(std_minimum_energy_eer_projection(:,kk),wb_idx(kk));
-%     end
-% end
+
 
 resultno = 1;
 % Save outputs into correct structure to be written to SEGY.
@@ -826,11 +797,7 @@ function [IGmatrix] = build_operator(totalvol,input_angles,ns_wavelet,wavelet_tm
     % Build operator for inversion
     for ii = 1:totalvol
         Iwavelet_interp(:,1+(ii-1)*ns_wavelet:ii*ns_wavelet) = wavelet_tmp{ii}';
-        %Iwavelet_interp(:,1+(ii-1)*ns_wavelet:ii*ns_wavelet) = wavelet_tmp{ii}'*(cosd(input_angles(ii)).*cosd(input_angles(ii)));
         Gwavelet_interp(:,1+(ii-1)*ns_wavelet:ii*ns_wavelet) = wavelet_tmp{ii}'*(sind(input_angles(ii)).*sind(input_angles(ii)));
-        %Iwavelet_interp(:,1+(ii-1)*ns_wavelet:ii*ns_wavelet) = interp1(wavelet_z_grid,wavelet_tmp{ii}',start_interp:1:end_interp,'linear','extrap');
-        %Gwavelet_interp(:,1+(ii-1)*ns_wavelet:ii*ns_wavelet) = interp1(wavelet_z_grid,...
-        %    wavelet_tmp{ii}'*(sind(input_angles(ii)).*sind(input_angles(ii))),start_interp:1:end_interp,'linear','extrap');
     end
 
     IGdiagnals = sort(reshape([(-hns_wavelet:hns_wavelet)',bsxfun(@plus,(-hns_wavelet:hns_wavelet)',(-ns:-ns:-ns*(totalvol-1)))],1,[]),'descend');
@@ -842,12 +809,7 @@ function [IGmatrix] = build_operator(totalvol,input_angles,ns_wavelet,wavelet_tm
 
     IGmatrix = [[Imatrix,Gmatrix;EERmatrix].*IGblank;smooth];
 end
-% 
-% function wavelet_interp = interpolate_wavelets(wavelet_z_grid,wavelet,start_interp,end_interp)
-% %     start_interp = min(wavelet_z_grid)-mode(diff(wavelet_z_grid'));
-% %     end_interp = max(wavelet_z_grid)+mode(diff(wavelet_z_grid'));
-%     wavelet_interp = interp1(wavelet_z_grid,wavelet',start_interp:1:end_interp,'spline','extrap');
-% end
+
 %%
 function wavelet_norm = wavelet_rms_norm(totalvol,wavelet_interp,vol_index)
     % Normalise the wavelets to have constant energy w.r.t. angle. The energy
@@ -859,16 +821,4 @@ function wavelet_norm = wavelet_rms_norm(totalvol,wavelet_interp,vol_index)
         ratio = norm_to./curwav;
         wavelet_norm{ii} = bsxfun(@times,wavelet_interp{ii},ratio);
     end
-%     A = cell2mat(wavelet_interp);
-%     %B = sqrt(sum(A.^2));
-%     B = (sum(abs(A)));
-%     %B = sqrt(max(A.^2));
-%     C = reshape(B',length(wavelet_z_grid),[]);
-%     D = C(:,vol_index);
-%     for ii=1:totalvol
-%         E = A(:,1+(ii-1)*length(wavelet_z_grid):ii*length(wavelet_z_grid));
-%         F = bsxfun(@rdivide,bsxfun(@times,E,D'),sqrt(sum(E.^2)));
-%         F(isnan(F)) = 0;
-%         wavelet_norm{ii} = F;
-%     end
 end
