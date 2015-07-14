@@ -16,10 +16,11 @@ prefix = 'script_figs/LSQR';
 
 
 mkdir('LSQR')
- int_grad_inv_proj_test_for_ubc('dummypath','800','8','1','36','0', ...
+ IG = int_grad_inv_proj_test_for_ubc('dummypath','800','8','1','36','0', ...
      '0','1',plot_stack,plot_convergence,plot_wavelet, l1, Wdomain,...
                                 iter, tolerance, smoothing, prefix,0);
 movefile('digi_results/*', 'LSQR')
+save 'LSQR/IG.mat', IG
 % 
 % 
 
@@ -29,10 +30,11 @@ smoothing = 1;
 prefix = 'script_figs/LSQR_tik';
 
  mkdir('LSQR_tik')
- int_grad_inv_proj_test_for_ubc('dummypath','800','8','1','36','0', ...
+ IG = int_grad_inv_proj_test_for_ubc('dummypath','800','8','1','36','0', ...
      '0','1',plot_stack,plot_convergence,plot_wavelet, l1, Wdomain,...
                                 iter, tolerance, smoothing, prefix,0);
  movefile('digi_results/*', 'LSQR_tik')
+    save 'LSQR_tik/IG.mat', IG
 
 % SPGL1
  mkdir('SPGL1')
@@ -40,21 +42,23 @@ prefix = 'script_figs/LSQR_tik';
  l1 = 1;
  prefix = 'script_figs/SPGL1';
  
- int_grad_inv_proj_test_for_ubc('dummypath','800','8','1','36','0', ...
+ IG = int_grad_inv_proj_test_for_ubc('dummypath','800','8','1','36','0', ...
      '0','1',plot_stack,plot_convergence,plot_wavelet, l1, Wdomain,...
                                 iter, tolerance, smoothing, prefix,0);
 movefile('digi_results/*', 'SPGL1')
-
+save 'SPGL1/IG.mat', IG
 
 % SPGL1 WL
 prefix =  'script_figs/SPGL1_WL';
 Wdomain = 1;
 
 mkdir('SPGL1_WL')
- int_grad_inv_proj_test_for_ubc('dummypath','800','8','1','36','0', ...
+ IG = int_grad_inv_proj_test_for_ubc('dummypath','800','8','1','36','0', ...
      '0','1',plot_stack,plot_convergence,plot_wavelet, l1, Wdomain,...
                                 iter, tolerance, smoothing, prefix,0);
 movefile('digi_results/*', 'SPGL1_WL')
+save 'SPGL1_WL/IG.mat', IG
+
 
 
 

@@ -1,4 +1,4 @@
-function [] = int_grad_inv_proj_test_for_ubc(job_meta_path,i_block,...
+function [IG] = int_grad_inv_proj_test_for_ubc(job_meta_path,i_block,...
     startvol,volinc,endvol,tottracerun,maxzout,wavevar, plot_stack, ...
     plot_convergence, plot_wavelet, l1, Wdomain, max_iterations, ...
     tolerance, smoothing, prefix, pc)
@@ -789,6 +789,10 @@ end
 
 i_block = str2double(i_block);
 node_segy_write(results_out,i_block,job_meta.s_rate/1000,output_dir);
+
+% return IG
+IG = ava;   
+
 
 end
 
